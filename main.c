@@ -5,18 +5,19 @@ struct warcaby{
     int rozmiar;
     char** plansza; 
 };
-
 struct warcaby* wczytaj(char sciezka[]);
 
 struct warcaby* StworzPlansze();
 
 struct warcaby* Inicjalizuj();
 
-void Wyswietl();
+void wypelnijPlansze(struct warcaby* gra);
+
+void zwolnij(struct warcaby* gra);
+
+void Wyswietl(struct warcaby* gra);
 
 void ClrBfr();
-
-void wypelnijPlansze(struct warcaby* gra);
 
 
 //----------------G L O W N A - F U N K C J A--------------------------------//
@@ -27,6 +28,7 @@ int main()
     struct warcaby* gra = Inicjalizuj();
     Wyswietl(gra);
     
+    zwolnij(gra);
     //Start();
 
     return 0;
@@ -78,6 +80,15 @@ void ClrBfr()
 {
     char c;
     while((c = getchar()) != '\n' && c != EOF);
+}
+
+//-------------Z W O L N I J - P A M I E C----------------------------//
+
+void zwolnij(struct warcaby* gra)
+{
+    for(int i = 0; i < gra->rozmiar; i++)
+        free(gra->plansza[i]);
+    free(gra);
 }
 
 //----------------W Y S W I E T L------------------------------//
