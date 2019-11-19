@@ -17,6 +17,10 @@ void zwolnij(struct warcaby* gra);
 
 void Wyswietl(struct warcaby* gra);
 
+void Ruch(struct warcaby* gra);
+
+int Sprawdz(struct warcaby* gra, int wiersz, int kolumna);
+
 void ClrBfr();
 
 
@@ -26,8 +30,12 @@ int main()
 {
     printf("To bedzie cudowna gra!\n");
     struct warcaby* gra = Inicjalizuj();
-    Wyswietl(gra);
     
+    for(int i = 0; i < 10; i++)
+    {
+        Wyswietl(gra);
+        Ruch(gra);
+    }
     zwolnij(gra);
     //Start();
 
@@ -100,21 +108,13 @@ void Wyswietl(struct warcaby* gra)
     printf("   ");
 
     for(int i = 0; i < gra->rozmiar;i++)
-        printf("%2d", i+1);
-    
-    printf("\n");  
-    
-
-    char podloga = '_';
-    printf("%2d|", 0);
-    for(int i = 0; i < gra->rozmiar;i++)
-        printf("%2c",podloga);
+        printf("%2d", i);
     
     printf("\n");   
     
     for(int i = 0; i < gra->rozmiar; i++,printf("\n"))
     {
-        printf("%2d|",i+1);
+        printf("%2d|",i);
         for(int j = 0; j< gra->rozmiar; j++)
         {
             printf("%2c",gra->plansza[i][j]);            
@@ -167,34 +167,73 @@ struct warcaby* StworzPlansze()
 
 void wypelnijPlansze(struct warcaby* gra)
 {
-    int stosunek=2/5*gra->rozmiar;
     for(int i=0;i<gra->rozmiar;i++)
     {    
         for(int j=0;j<gra->rozmiar;j++)
         {          
-            gra->plansza[i][j] = '-';          //zapisywanie calej planszy spacjmi
+            gra->plansza[i][j] = 45;          //zapisywanie calej planszy spacjmi
         }
     }
 
-    for(int i=0;i<stosunek;i++)
+    for(int i=0;i<3;i++)
     {
         for(int j=0;j<gra->rozmiar;j++)
         {
             if((i+j)%2==0)
-                gra->plansza[i][j]='-';
+                gra->plansza[i][j]= 45;
             else
-                gra->plansza[i][j]='X';           //zapisywanie pierwszych trzech wierszy X-ami
+                gra->plansza[i][j]= 'X';           //zapisywanie pierwszych trzech wierszy X-ami
         }
     }
 
-    for(int i=(gra->rozmiar-stosunek);i<gra->rozmiar;i++)
+    for(int i=(gra->rozmiar-3);i<gra->rozmiar;i++)
     {
         for(int j=0;j<gra->rozmiar;j++)
         {
             if((i+j)%2==0)
-                gra->plansza[i][j]='-';
+                gra->plansza[i][j]=45;
             else
                 gra->plansza[i][j]='O';     //zapisywanie ostatnich trzech wierszy O-ami
         }
     }
+}
+
+//----------------------------R U C H----------------------------//
+
+void Ruch(struct warcaby* gra)
+{
+    int wiersz1,kolumna1,wiersz2,kolumna2;
+    do{                                 //wybor piona
+    printf("Wybierz pionek\n");
+    printf("Wybierz wiersz: ");
+    scanf("%d", &wiersz1);
+    ClrBfr();
+    printf("Wybierz kolumne: ");
+    scanf("%d",&kolumna1);
+    ClrBfr();
+    if(wiersz1 < 0 || wiersz1 > gra->rozmiar || kolumna1 < 0 || kolumna1 > gra->rozmiar)
+        continue;
+    }while(gra->plansza[wiersz1][kolumna1] == 45);
+
+
+    do{
+    printf("\nWybierz pole\n");                                      //wypor pola
+    printf("Wybierz wiersz: ");
+    scanf("%d", &wiersz2);
+    ClrBfr();
+    printf("Wybierz kolumne: ");
+    scanf("%d",&kolumna2);
+    ClrBfr();
+    }while(!Sprawdz(gra,wiersz2,kolumna2));  
+
+    gra->plansza[wiersz2][kolumna2] = gra->plansza[wiersz1][kolumna1];
+    gra->plansza[wiersz1][kolumna1] = 45;  
+}
+
+//----------------S P R A W D Z A N I E----------------------------//
+
+int Sprawdz(struct warcaby* gra, int wiersz, int kolumna)
+{
+    if(wiersz < 0 || wiersz > gra->rozmiar || kolumna < 0 || kolumna > gra->rozmiar)
+        return 0;
 }
