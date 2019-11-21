@@ -215,16 +215,23 @@ void ruch(struct warcaby* gra,int gracz)
 {
     int wiersz1,kolumna1,wiersz2,kolumna2,warunek = 1;
     do{                                 //wybor piona
+    if(gracz%2==0)
+        printf("\nGracz 'O'\n");
+    else
+        printf("\nGracz 'X'\n");
+    
     printf("Wybierz pionek\n");
-       printf("\n%d\n",gracz%2);
     printf("Wybierz wiersz: ");
     scanf("%d", &wiersz1);
     ClrBfr();
     printf("Wybierz kolumne: ");
     scanf("%d",&kolumna1);
     ClrBfr();
-    if(wiersz1 < 0 || wiersz1 > gra->rozmiar || kolumna1 < 0 || kolumna1 > gra->rozmiar)
+    if(wiersz1 < 0 || wiersz1 >= gra->rozmiar || kolumna1 < 0 || kolumna1 >= gra->rozmiar)
+    {
+        warunek = 0;
         continue;
+    }
     if(gracz%2==0)
     {
         if(gra->plansza[wiersz1][kolumna1] == 'X')
@@ -237,7 +244,7 @@ void ruch(struct warcaby* gra,int gracz)
     }
     
     
-    }while(gra->plansza[wiersz1][kolumna1] == 45 || warunek == 0);
+    }while(warunek == 0 || gra->plansza[wiersz1][kolumna1] == 45);
 
 
     do{
