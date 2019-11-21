@@ -15,11 +15,13 @@ void wypelnijPlansze(struct warcaby* gra);
 
 void zwolnij(struct warcaby* gra);
 
-void Wyswietl(struct warcaby* gra);
+void wyswietl(struct warcaby* gra);
 
-void Ruch(struct warcaby* gra);
+void ruch(struct warcaby* gra, int i);
 
-int Sprawdz(struct warcaby* gra, int wiersz, int kolumna);
+int sprawdz(struct warcaby* gra, int wiersz2, int kolumna2,int wiersz1,int kolumna1,int gracz);
+
+void zapisz(struct warcaby* gra);
 
 void ClrBfr();
 
@@ -32,8 +34,10 @@ int main()
     struct warcaby* gra = Inicjalizuj();
     for(int i = 0; i < 10; i++)
     {
-        Wyswietl(gra);
-        Ruch(gra);
+
+        wyswietl(gra);
+        zapisz(gra);
+        ruch(gra,i);
     }
     
     zwolnij(gra);
@@ -50,7 +54,7 @@ struct warcaby* Inicjalizuj()
     int warunek = 0;
     while(warunek == 0)
     {
-    printf("\n\tCzy wczytac konfiguracje domyslna[Y/n]?\n");
+    printf("\n\tCzy wczytac zapisana gre[Y/n]?\n");
     char znak;
     scanf("%c",&znak);
 
@@ -58,7 +62,7 @@ struct warcaby* Inicjalizuj()
     {
         case 'Y': case 'y': case 10:
         {
-            gra = wczytaj("conf.txt");
+            gra = wczytaj("zapis.txt");
             warunek = 1; 
             ClrBfr();  
             break;
@@ -101,7 +105,7 @@ void zwolnij(struct warcaby* gra)
 
 //----------------W Y S W I E T L------------------------------//
 
-void Wyswietl(struct warcaby* gra)
+void wyswietl(struct warcaby* gra)
 {
     printf("\n\tWyswietlanie planszy\n\n");
 
@@ -125,20 +129,26 @@ void Wyswietl(struct warcaby* gra)
 
 }
 
-//-------------D O M Y Ś L N A - K O N F I G U R A C J A----------------//
+//-------------W C Z Y T A J - G R E----------------//
 
 struct warcaby* wczytaj(char sciezka[])
 {
     FILE* in = fopen(sciezka,"r");
     struct warcaby* gra = malloc(sizeof(struct warcaby));
-    fscanf(in,"%d",&gra->rozmiar);
+    fread(&gra->rozmiar,sizeof(int),1,in);
     gra->plansza = malloc(gra->rozmiar * sizeof(char*));
     for(int i = 0; i < gra->rozmiar; i++)
     {
         gra->plansza[i] = malloc(gra->rozmiar * sizeof(char));
     }
 
-    wypelnijPlansze(gra);
+    for(int i = 0; i < gra->rozmiar; i++)
+    {
+        for(int j = 0; j < gra->rozmiar; j++)
+        {
+            fread(gra->plansza[i]+j,sizeof(char),1,in);
+        }
+    }
 
     fclose(in);
     return gra;
@@ -201,10 +211,15 @@ void wypelnijPlansze(struct warcaby* gra)
 
 //----------------------------R U C H----------------------------//
 
-void Ruch(struct warcaby* gra)
+void ruch(struct warcaby* gra,int gracz)
 {
-    int wiersz1,kolumna1,wiersz2,kolumna2;
+    int wiersz1,kolumna1,wiersz2,kolumna2,warunek = 1;
     do{                                 //wybor piona
+    if(gracz%2==0)
+        printf("\nGracz 'O'\n");
+    else
+        printf("\nGracz 'X'\n");
+    
     printf("Wybierz pionek\n");
     printf("Wybierz wiersz: ");
     scanf("%d", &wiersz1);
@@ -212,9 +227,24 @@ void Ruch(struct warcaby* gra)
     printf("Wybierz kolumne: ");
     scanf("%d",&kolumna1);
     ClrBfr();
-    if(wiersz1 < 0 || wiersz1 > gra->rozmiar || kolumna1 < 0 || kolumna1 > gra->rozmiar)
+    if(wiersz1 < 0 || wiersz1 >= gra->rozmiar || kolumna1 < 0 || kolumna1 >= gra->rozmiar)
+    {
+        warunek = 0;
         continue;
-    }while(gra->plansza[wiersz1][kolumna1] == 45);
+    }
+    if(gracz%2==0)
+    {
+        if(gra->plansza[wiersz1][kolumna1] == 'X')
+            warunek = 0;
+    }
+    else
+    {
+        if(gra->plansza[wiersz1][kolumna1] == 'O')
+            warunek = 0;
+    }
+    
+    
+    }while(warunek == 0 || gra->plansza[wiersz1][kolumna1] == 45);
 
 
     do{
@@ -225,7 +255,7 @@ void Ruch(struct warcaby* gra)
     printf("Wybierz kolumne: ");
     scanf("%d",&kolumna2);
     ClrBfr();
-    }while(!Sprawdz(gra,wiersz2,kolumna2));  
+    }while(!sprawdz(gra,wiersz2,kolumna2,wiersz1,kolumna1,gracz%2));  
 
     gra->plansza[wiersz2][kolumna2] = gra->plansza[wiersz1][kolumna1];
     gra->plansza[wiersz1][kolumna1] = 45;  
@@ -233,8 +263,46 @@ void Ruch(struct warcaby* gra)
 
 //----------------S P R A W D Z A N I E----------------------------//
 
-int Sprawdz(struct warcaby* gra, int wiersz, int kolumna)
+int sprawdz(struct warcaby* gra, int wiersz2, int kolumna2, int wiersz1, int kolumna1,int gracz)
 {
-    if(wiersz < 0 || wiersz > gra->rozmiar || kolumna < 0 || kolumna > gra->rozmiar)
+    if(wiersz2 < 0 || wiersz2 >= gra->rozmiar || kolumna2 < 0 || kolumna2 >= gra->rozmiar)
         return 0;
+
+    switch (gracz)
+    {
+        case 0:                //dla 'O'
+        {
+            if(gra->plansza[wiersz2][kolumna2] == 'O')
+                return 0;
+        }
+        break;
+
+        case 1:
+        {
+            if(gra->plansza[wiersz2][kolumna2] == 'X')
+                return 0;
+        }
+        break;
+    
+    default:
+        break;
+    }  
+}
+
+//--------------------Z A P I S Y W A N I E------------------------------------//
+
+void zapisz(struct warcaby* gra)
+{
+    FILE* out = fopen("zapis.txt","w+");
+    fwrite(&gra->rozmiar,sizeof(int),1,out);
+    for(int i = 0; i < gra->rozmiar; i++)
+    {
+        for(int j = 0; j < gra->rozmiar; j++)
+        {
+            fwrite(gra->plansza[i]+j,sizeof(char),1,out);
+        }
+    }
+
+
+    fclose(out);    
 }
