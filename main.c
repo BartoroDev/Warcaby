@@ -20,7 +20,15 @@ void wyswietl(struct warcaby* gra);
 
 void ruch(struct warcaby* gra);
 
-int sprawdz(struct warcaby* gra, int wiersz1, int kolumna1, int wiersz2, int kolumna2);
+//int sprawdz(struct warcaby* gra, int wiersz1, int kolumna1, int wiersz2, int kolumna2);
+
+int MozliwoscRuchu(struct warcaby* gra,int wiersz1,int kolumna1);
+
+int PustePole(struct warcaby* gra,int wiersz1,int kolumna1);
+
+int Czymozna(struct warcaby* gra,int wiersz1,int kolumna1);
+
+int CzymoznaKraw(struct warcaby* gra,int wiersz1,int kolumna1);
 
 void zapisz(struct warcaby* gra);
 
@@ -29,6 +37,10 @@ void wyborPola();
 void wyborPionka();
 
 void ClrBfr();
+
+int zbicie = 0;
+
+int pozX,pozY;
 
 
 //----------------G L O W N A - F U N K C J A--------------------------------//
@@ -39,10 +51,9 @@ int main()
     struct warcaby* gra = Inicjalizuj();
     for(int i = 0; i < 10; i++)
     {
-
         wyswietl(gra);
-        zapisz(gra);
         ruch(gra);
+        zapisz(gra);
     }
     
     zwolnij(gra);
@@ -221,12 +232,19 @@ void wypelnijPlansze(struct warcaby* gra)
 void ruch(struct warcaby* gra)
 {
     int wiersz1,kolumna1,wiersz2,kolumna2,warunek = 1;
+    
+    if(zbicie == 0)   //nie bylo zbicia
+    {
     do{                                 //wybor piona
+        warunek = 1;
+        
+        //wyswietlanie gracza
         if(gra->gracz%2==0)
             printf("\nGracz 'O'\n");
         else
             printf("\nGracz 'X'\n");
-    
+        
+        //wczytywanie piona
         printf("Wybierz pionek\n");
         printf("Wybierz wiersz: ");
         scanf("%d", &wiersz1);
@@ -234,27 +252,62 @@ void ruch(struct warcaby* gra)
         printf("Wybierz kolumne: ");
         scanf("%d",&kolumna1);
         ClrBfr();
+        
+        //czy w planszy
         if(wiersz1 < 0 || wiersz1 >= gra->rozmiar || kolumna1 < 0 || kolumna1 >= gra->rozmiar)
         {
             warunek = 0;
             continue;
         }
+        
+        //czy pionek
+        if(gra->plansza[wiersz1][kolumna1] == 45)
+        {
+            warunek = 0;
+            continue;
+        }
+        
+        //czy dobry pionek
         if(gra->gracz%2==0)
         {
             if(gra->plansza[wiersz1][kolumna1] == 'X')
+            {
                 warunek = 0;
+                continue;
+            }
         }
         else
         {
             if(gra->plansza[wiersz1][kolumna1] == 'O')
+            {
                 warunek = 0;
+                continue;
+            }
         }
+        
+        //czy istnieje mozliwosc ruchu
+        if(MozliwoscRuchu(gra,wiersz1,kolumna1) == 0)
+        {
+            warunek = 0;
+            continue;
+        }
+        
+    }while(warunek == 0);
+    }
 
-    }while(warunek == 0 || gra->plansza[wiersz1][kolumna1] == 45);
-
+    else   //nastapilo zbicie
+    {
+        wiersz1 = pozY;
+        kolumna1 = pozX;
+    }
+    
 
     do
     {
+        if(Czymozna(gra,wiersz1,kolumna1))
+        {
+
+        }
         printf("\nWybierz pole\n");                                      //wypor pola
         printf("Wybierz wiersz: ");
         scanf("%d", &wiersz2);
@@ -262,6 +315,7 @@ void ruch(struct warcaby* gra)
         printf("Wybierz kolumne: ");
         scanf("%d",&kolumna2);
         ClrBfr();
+        Czymozna(gra,wiersz1,kolumna1);
     }while(!sprawdz(gra,wiersz1,kolumna1,wiersz2,kolumna2));  
 
     gra->plansza[wiersz2][kolumna2] = gra->plansza[wiersz1][kolumna1];
@@ -275,38 +329,54 @@ int sprawdz(struct warcaby* gra, int wiersz1, int kolumna1, int wiersz2, int kol
 {
     //wyjscie poza plansze
     if(wiersz2 < 0 || wiersz2 > gra->rozmiar || kolumna2 < 0 || kolumna2 > gra->rozmiar)
+    {
+        zbicie = 0;
         return 0;
+    }
 
     //sprawdzanie czy pole jest puste
     if(gra->plansza[wiersz2][kolumna2] != 45)
+    {
+        zbicie = 0;
         return 0;
+    }
 
-    /*
-    ustawianie damki
-    */  
+    
+    //ustawianie damki
+  
 
     //sprawdzanie odleglosci
     int Hor,Ver;
     Hor = kolumna2 - kolumna1;
     Ver = wiersz2 - wiersz1;
     if((Hor > 2 || Hor < -2) || (Ver > 2 || Ver < -2))
+    {
+        zbicie = 0;
         return 0;
+    }
 
     switch(gra->gracz%2)
     {
         case 0:
 
         if(Ver >= 0)//sprawdzanie kierunku
+        {
+            zbicie = 0;
             return 0;
+        }
             
         if((Ver == -1) && (Hor == 1 || Hor == -1)) //przesuwanie o jedno pole
+        {
+            zbicie = 0;
             return 1;
+        }
 
         if(gra->plansza[wiersz1 - 1][kolumna1 + (Hor/2)]=='X') // zbicie
             {
-                //printf("\n%d\t%d\n",Hor,Ver);
                 gra->plansza[wiersz1 + (Ver/2)][kolumna1 + (Hor/2)]=45;
-                
+                zbicie = 1;
+                pozX = kolumna1;
+                pozY = wiersz1;
                 return 1;
             }
         else 
@@ -315,25 +385,143 @@ int sprawdz(struct warcaby* gra, int wiersz1, int kolumna1, int wiersz2, int kol
         break;
 
         case 1:
+
         if(Ver <= 0)//sprawdzanie kierunku
+        {
+            zbicie = 0;
             return 0;
+        }
+
         if((Ver == 1) && (Hor == 1 || Hor == -1)) //przesuwanie o jedno pole
+        {
+            zbicie = 0;
             return 1;
+        }
 
         if(gra->plansza[wiersz1 + 1][kolumna1 + (Hor/2)]=='O') // zbicie
             {
-                //printf("\n%d\t%d\n",Hor,Ver);
                 gra->plansza[wiersz1 + 1][kolumna1 + (Hor/2)]=45;
-                //zbicie('X');
+                zbicie = 1;
+                pozX = kolumna1;
+                pozY = wiersz1;
                 return 1;
             }
         else 
+        {
+            zbicie = 0;
             return 0;
+        }
 
         break;
     }
+    zbicie = 0;
     return 0;
 
+}
+
+//---------------------M O Z L I W O S C - R U C H U-------------//
+
+int MozliwoscRuchu(struct warcaby* gra, int wiersz1, int kolumna1)
+{
+    //sprawdza czy sa puste miejsca
+    if(PustePole(gra,wiersz1,kolumna1) == 1)
+        return 1;
+    
+    //sprawdza czy istnieje zbicie
+    if(wiersz1 < 2 || wiersz1 > (gra->rozmiar - 2) || kolumna1 < 2 || kolumna1 > (gra->rozmiar - 2))
+        if(CzymoznaKraw(gra,wiersz1,kolumna1) == 1)
+        {
+            return 1;
+        }
+    else
+        if(Czymozna == 1)
+        {
+            return 1;
+        }
+
+    return 0;
+}
+
+//---------------------S P R A W D Z A N I E - P U S T Y C H - P O L------------//
+
+int PustePole(struct warcaby* gra, int wiersz1, int kolumna1)
+{
+    //dla gracza '0'
+    if(gra->gracz%2==0)
+    {
+        for(int i = 0; i < 3; i+=2)
+        {
+            if((kolumna1 - 1 + i) >= gra->rozmiar || (kolumna1 - 1 + i) < 0 || wiersz1 == 0)
+                continue;
+            if(gra->plansza[wiersz1 - 1][kolumna1 - 1 + i] == '-')
+                return 1;
+            
+        }
+    }
+    //dla gracza 'X
+    else
+    {
+        for(int i = 0; i < 3; i+=2)
+        {
+            if((kolumna1 - 1 + i) >= gra->rozmiar || (kolumna1 - 1 + i) < 0 || wiersz1 == (gra->rozmiar -1))
+                continue;
+            if(gra->plansza[wiersz1 + 1][kolumna1 - 1 + i] == '-')
+                return 1;
+            
+        }
+    }
+    
+    return 0;
+}
+
+//---------------------C Z Y - M O Z N A - Z B I C-------------//
+
+int Czymozna(struct warcaby* gra,int wiersz1, int kolumna1)
+{
+    if(gra->gracz%2==0)
+    {
+        if((gra->plansza[wiersz1 - 1][kolumna1 - 1] == 'X') && (gra->plansza[wiersz1 - 2][kolumna1 - 2] == '-'))
+            return 1;
+        if((gra->plansza[wiersz1 - 1][kolumna1 + 1] == 'X') && (gra->plansza[wiersz1 - 2][kolumna1 + 2] == '-'))
+            return 1;
+
+    }
+    else
+    {
+        if((gra->plansza[wiersz1 + 1][kolumna1 - 1] == 'O') && (gra->plansza[wiersz1 + 2][kolumna1 - 2] == '-'))
+           return 1;
+        if((gra->plansza[wiersz1 + 1][kolumna1 + 1] == 'O') && (gra->plansza[wiersz1 + 2][kolumna1 + 2] == '-'))
+            return 1; 
+        
+    }
+    return 0;
+}
+
+//---------------------C Z Y - M O Z N A - Z B I C - Z - K R A W E D Z I-------------//
+
+int CzymoznaKraw(struct warcaby* gra,int wiersz1, int kolumna1)
+{
+    //dla gracza 'O'
+    if(gra->gracz%2==0 && wiersz1 > 1)
+        for(int i = 0; i < 3; i+=2)
+        {
+            if((kolumna1 - 1 + i) < 0 || (kolumna1 -1 + i) >= gra->rozmiar)
+                continue;
+            if((gra->plansza[wiersz1 - 1][kolumna1 - 1 + i] == 'X') && (gra->plansza[wiersz1 - 2][kolumna1 -1 + i] == '-'))
+                return 1;
+        }
+
+    //dla gracza 'X'
+    if(gra->gracz%2==1 && wiersz1 < gra->rozmiar - 2)
+        for(int i = 0; i < 3; i+=2)
+        {
+            if((kolumna1 - 1 + i) < 0 || (kolumna1 -1 + i) >= gra->rozmiar)
+                continue;
+            if((gra->plansza[wiersz1 + 1][kolumna1 - 1 + i] == 'O') && (gra->plansza[wiersz1 + 2][kolumna1 -1 + i] == '-'))
+                return 1;
+        }
+
+    return 0;
 }
 
 //--------------------Z A P I S Y W A N I E------------------------------------//
@@ -353,3 +541,5 @@ void zapisz(struct warcaby* gra)
 
     fclose(out);    
 }
+
+
