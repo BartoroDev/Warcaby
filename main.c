@@ -20,7 +20,7 @@ void wyswietl(struct warcaby* gra);
 
 void ruch(struct warcaby* gra);
 
-//int sprawdz(struct warcaby* gra, int wiersz1, int kolumna1, int wiersz2, int kolumna2);
+int sprawdz(struct warcaby* gra, int wiersz1, int kolumna1, int wiersz2, int kolumna2);
 
 int MozliwoscRuchu(struct warcaby* gra,int wiersz1,int kolumna1);
 
@@ -29,6 +29,8 @@ int PustePole(struct warcaby* gra,int wiersz1,int kolumna1);
 int Czymozna(struct warcaby* gra,int wiersz1,int kolumna1);
 
 int CzymoznaKraw(struct warcaby* gra,int wiersz1,int kolumna1);
+
+int CzyIstniejeBicie(struct warcaby* gra,int wiersz1,int kolumna1);
 
 void zapisz(struct warcaby* gra);
 
@@ -49,7 +51,7 @@ int main()
 {
     printf("To bedzie cudowna gra!\n");
     struct warcaby* gra = Inicjalizuj();
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < 100; i++)
     {
         wyswietl(gra);
         ruch(gra);
@@ -294,20 +296,15 @@ void ruch(struct warcaby* gra)
         
     }while(warunek == 0);
     }
-
     else   //nastapilo zbicie
     {
-        wiersz1 = pozY;
         kolumna1 = pozX;
+        wiersz1 = pozY;
     }
     
 
     do
     {
-        if(Czymozna(gra,wiersz1,kolumna1))
-        {
-
-        }
         printf("\nWybierz pole\n");                                      //wypor pola
         printf("Wybierz wiersz: ");
         scanf("%d", &wiersz2);
@@ -315,12 +312,19 @@ void ruch(struct warcaby* gra)
         printf("Wybierz kolumne: ");
         scanf("%d",&kolumna2);
         ClrBfr();
-        Czymozna(gra,wiersz1,kolumna1);
     }while(!sprawdz(gra,wiersz1,kolumna1,wiersz2,kolumna2));  
 
-    gra->plansza[wiersz2][kolumna2] = gra->plansza[wiersz1][kolumna1];
-    gra->plansza[wiersz1][kolumna1] = 45;  
-    gra->gracz+=1;
+    if(zbicie == 1 && CzyIstniejeBicie(gra,wiersz2,kolumna2) == 1)
+    {
+        return 0;
+    }
+    else
+    {
+        zbicie = 0;    
+        gra->gracz+= 1;
+        return 0;
+    }
+    
 }
 
 //----------------S P R A W D Z A N I E----------------------------//
@@ -330,30 +334,21 @@ int sprawdz(struct warcaby* gra, int wiersz1, int kolumna1, int wiersz2, int kol
     //wyjscie poza plansze
     if(wiersz2 < 0 || wiersz2 > gra->rozmiar || kolumna2 < 0 || kolumna2 > gra->rozmiar)
     {
-        zbicie = 0;
         return 0;
     }
 
     //sprawdzanie czy pole jest puste
     if(gra->plansza[wiersz2][kolumna2] != 45)
     {
-        zbicie = 0;
         return 0;
     }
-
-    
-    //ustawianie damki
-  
 
     //sprawdzanie odleglosci
     int Hor,Ver;
     Hor = kolumna2 - kolumna1;
     Ver = wiersz2 - wiersz1;
     if((Hor > 2 || Hor < -2) || (Ver > 2 || Ver < -2))
-    {
-        zbicie = 0;
         return 0;
-    }
 
     switch(gra->gracz%2)
     {
@@ -361,12 +356,17 @@ int sprawdz(struct warcaby* gra, int wiersz1, int kolumna1, int wiersz2, int kol
 
         if(Ver >= 0)//sprawdzanie kierunku
         {
-            zbicie = 0;
             return 0;
         }
             
         if((Ver == -1) && (Hor == 1 || Hor == -1)) //przesuwanie o jedno pole
         {
+            if(zbicie == 1)
+            {
+                return 0;
+            }
+            gra->plansza[wiersz1][kolumna1] = 45; 
+            gra->plansza[wiersz2][kolumna2] = 'O'; 
             zbicie = 0;
             return 1;
         }
@@ -374,9 +374,11 @@ int sprawdz(struct warcaby* gra, int wiersz1, int kolumna1, int wiersz2, int kol
         if(gra->plansza[wiersz1 - 1][kolumna1 + (Hor/2)]=='X') // zbicie
             {
                 gra->plansza[wiersz1 + (Ver/2)][kolumna1 + (Hor/2)]=45;
+                gra->plansza[wiersz1][kolumna1] = 45; 
+                gra->plansza[wiersz2][kolumna2] = 'O';
                 zbicie = 1;
-                pozX = kolumna1;
-                pozY = wiersz1;
+                pozX = kolumna2;
+                pozY = wiersz2;
                 return 1;
             }
         else 
@@ -388,35 +390,40 @@ int sprawdz(struct warcaby* gra, int wiersz1, int kolumna1, int wiersz2, int kol
 
         if(Ver <= 0)//sprawdzanie kierunku
         {
-            zbicie = 0;
             return 0;
         }
 
         if((Ver == 1) && (Hor == 1 || Hor == -1)) //przesuwanie o jedno pole
         {
+            if(zbicie == 1)
+            {
+                return 0;
+            }
             zbicie = 0;
+            gra->plansza[wiersz1][kolumna1] = 45; 
+            gra->plansza[wiersz2][kolumna2] = 'X';
             return 1;
         }
 
         if(gra->plansza[wiersz1 + 1][kolumna1 + (Hor/2)]=='O') // zbicie
             {
                 gra->plansza[wiersz1 + 1][kolumna1 + (Hor/2)]=45;
+                gra->plansza[wiersz1][kolumna1] = 45; 
+                gra->plansza[wiersz2][kolumna2] = 'X';
                 zbicie = 1;
-                pozX = kolumna1;
-                pozY = wiersz1;
+                pozX = kolumna2;
+                pozY = wiersz2;
                 return 1;
             }
         else 
         {
-            zbicie = 0;
             return 0;
         }
 
         break;
     }
-    zbicie = 0;
-    return 0;
 
+    return 0;
 }
 
 //---------------------M O Z L I W O S C - R U C H U-------------//
@@ -425,19 +432,17 @@ int MozliwoscRuchu(struct warcaby* gra, int wiersz1, int kolumna1)
 {
     //sprawdza czy sa puste miejsca
     if(PustePole(gra,wiersz1,kolumna1) == 1)
+    {
         return 1;
-    
-    //sprawdza czy istnieje zbicie
-    if(wiersz1 < 2 || wiersz1 > (gra->rozmiar - 2) || kolumna1 < 2 || kolumna1 > (gra->rozmiar - 2))
-        if(CzymoznaKraw(gra,wiersz1,kolumna1) == 1)
-        {
-            return 1;
-        }
+    }
     else
-        if(Czymozna == 1)
+    {
+        //sprawdza czy istnieje zbicie
+        if(CzyIstniejeBicie(gra,wiersz1,kolumna1) == 1)
         {
             return 1;
         }
+    }  
 
     return 0;
 }
@@ -474,25 +479,41 @@ int PustePole(struct warcaby* gra, int wiersz1, int kolumna1)
     return 0;
 }
 
-//---------------------C Z Y - M O Z N A - Z B I C-------------//
+//---------------------C Z Y - I S T N I E J E - B I C I E-------------//
+
+int CzyIstniejeBicie(struct warcaby* gra,int wiersz1, int kolumna1)
+{
+    if(wiersz1 < 2 || wiersz1 > (gra->rozmiar - 2) || kolumna1 < 2 || kolumna1 > (gra->rozmiar - 2))
+    {
+        if(CzymoznaKraw(gra,wiersz1,kolumna1) == 1)
+        {
+            return 1;
+        }
+    }
+    else
+    {
+        if(Czymozna(gra,wiersz1,kolumna1) == 1)
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+//---------------------C Z Y - M O Z N A - Z B I C - W - P O L U-------------//
 
 int Czymozna(struct warcaby* gra,int wiersz1, int kolumna1)
 {
     if(gra->gracz%2==0)
     {
-        if((gra->plansza[wiersz1 - 1][kolumna1 - 1] == 'X') && (gra->plansza[wiersz1 - 2][kolumna1 - 2] == '-'))
+        if(((gra->plansza[wiersz1 - 1][kolumna1 - 1] == 'X') && (gra->plansza[wiersz1 - 2][kolumna1 - 2] == '-')) || ((gra->plansza[wiersz1 - 1][kolumna1 + 1] == 'X') && (gra->plansza[wiersz1 - 2][kolumna1 + 2] == '-')))
             return 1;
-        if((gra->plansza[wiersz1 - 1][kolumna1 + 1] == 'X') && (gra->plansza[wiersz1 - 2][kolumna1 + 2] == '-'))
-            return 1;
-
     }
     else
     {
-        if((gra->plansza[wiersz1 + 1][kolumna1 - 1] == 'O') && (gra->plansza[wiersz1 + 2][kolumna1 - 2] == '-'))
-           return 1;
-        if((gra->plansza[wiersz1 + 1][kolumna1 + 1] == 'O') && (gra->plansza[wiersz1 + 2][kolumna1 + 2] == '-'))
-            return 1; 
-        
+        if(((gra->plansza[wiersz1 + 1][kolumna1 - 1] == 'O') && (gra->plansza[wiersz1 + 2][kolumna1 - 2] == '-')) || ((gra->plansza[wiersz1 + 1][kolumna1 + 1] == 'O') && (gra->plansza[wiersz1 + 2][kolumna1 + 2] == '-')))
+           return 1; 
     }
     return 0;
 }
@@ -502,12 +523,12 @@ int Czymozna(struct warcaby* gra,int wiersz1, int kolumna1)
 int CzymoznaKraw(struct warcaby* gra,int wiersz1, int kolumna1)
 {
     //dla gracza 'O'
-    if(gra->gracz%2==0 && wiersz1 > 1)
+    if(gra->gracz%2==0 && wiersz1 > 0)
         for(int i = 0; i < 3; i+=2)
         {
             if((kolumna1 - 1 + i) < 0 || (kolumna1 -1 + i) >= gra->rozmiar)
                 continue;
-            if((gra->plansza[wiersz1 - 1][kolumna1 - 1 + i] == 'X') && (gra->plansza[wiersz1 - 2][kolumna1 -1 + i] == '-'))
+            if((gra->plansza[wiersz1 - 1][kolumna1 - 1 + i] == 'X') && (gra->plansza[wiersz1 - 2][kolumna1 -2 + (2*i)] == '-'))
                 return 1;
         }
 
@@ -517,7 +538,7 @@ int CzymoznaKraw(struct warcaby* gra,int wiersz1, int kolumna1)
         {
             if((kolumna1 - 1 + i) < 0 || (kolumna1 -1 + i) >= gra->rozmiar)
                 continue;
-            if((gra->plansza[wiersz1 + 1][kolumna1 - 1 + i] == 'O') && (gra->plansza[wiersz1 + 2][kolumna1 -1 + i] == '-'))
+            if((gra->plansza[wiersz1 + 1][kolumna1 - 1 + i] == 'O') && (gra->plansza[wiersz1 + 2][kolumna1 -2 + (2*i)] == '-'))
                 return 1;
         }
 
@@ -541,5 +562,4 @@ void zapisz(struct warcaby* gra)
 
     fclose(out);    
 }
-
 
