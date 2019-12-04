@@ -22,6 +22,10 @@ void ruch(struct warcaby* gra);
 
 int sprawdz(struct warcaby* gra, int wiersz1, int kolumna1, int wiersz2, int kolumna2);
 
+int sprawdzPionka(struct warcaby* gra, int w1, int k1, int w2, int k2);
+
+int sprawdzDamke(struct warcaby* gra, int w1, int k1, int w2, int k2);
+
 int MozliwoscRuchu(struct warcaby* gra,int wiersz1,int kolumna1);
 
 int PustePole(struct warcaby* gra,int wiersz1,int kolumna1);
@@ -113,7 +117,7 @@ struct warcaby* Inicjalizuj()
 void ClrBfr()
 {
     char c;
-    while((c = getchar()) != '\n' && c != EOF);
+    while-((c = getchar()) != '\n' && c != EOF);
 }
 
 //-------------Z W O L N I J - P A M I E C----------------------------//
@@ -339,110 +343,21 @@ void ruch(struct warcaby* gra)
 int sprawdz(struct warcaby* gra, int wiersz1, int kolumna1, int wiersz2, int kolumna2)
 {
     //wyjscie poza plansze
-    if(wiersz2 < 0 || wiersz2 > gra->rozmiar || kolumna2 < 0 || kolumna2 > gra->rozmiar)
+    if(wiersz2 < 0 || wiersz2 > gra->rozmiar - 1 || kolumna2 < 0 || kolumna2 > gra->rozmiar - 1)
     {
         return 0;
     }
 
-    //sprawdzanie czy pole jest puste
+    //sprawdzanie pola
     if(gra->plansza[wiersz2][kolumna2] != 45)
-    {
         return 0;
-    }
-
-    //sprawdzanie odleglosci
-    int Hor,Ver;
-    Hor = kolumna2 - kolumna1;
-    Ver = wiersz2 - wiersz1;
-    if((Hor > 2 || Hor < -2) || (Ver > 2 || Ver < -2))
-        return 0;
-
-    switch(gra->gracz%2)
+    else if((gra->plansza[wiersz1][kolumna1] == '@') || (gra->plansza[wiersz1][kolumna1] == '$'))
     {
-        case 0:
-
-        if(Ver >= 0)//sprawdzanie kierunku
-        {
-            return 0;
-        }
-            
-        if((Ver == -1) && (Hor == 1 || Hor == -1)) //przesuwanie o jedno pole
-        {
-            if(zbicie == 1)
-            {
-                return 0;
-            }
-            gra->plansza[wiersz1][kolumna1] = 45;
-            if(wiersz2 == 0)
-                gra->plansza[wiersz2][kolumna2] = '@';
-            else 
-                gra->plansza[wiersz2][kolumna2] = 'O'; 
-            zbicie = 0;
-            return 1;
-        }
-
-        if(gra->plansza[wiersz1 - 1][kolumna1 + (Hor/2)]=='X') // zbicie
-            {
-                gra->plansza[wiersz1 + (Ver/2)][kolumna1 + (Hor/2)]=45;
-                gra->plansza[wiersz1][kolumna1] = 45; 
-                if(wiersz2 == 0)
-                    gra->plansza[wiersz2][kolumna2] = '@';
-                else 
-                    gra->plansza[wiersz2][kolumna2] = 'O'; 
-                zbicie = 1;
-                pozX = kolumna2;
-                pozY = wiersz2;
-                return 1;
-            }
-        else 
-            return 0;
-
-        break;
-
-        case 1:
-
-        if(Ver <= 0)//sprawdzanie kierunku
-        {
-            return 0;
-        }
-
-        if((Ver == 1) && (Hor == 1 || Hor == -1)) //przesuwanie o jedno pole
-        {
-            if(zbicie == 1)
-            {
-                return 0;
-            }
-            zbicie = 0;
-            gra->plansza[wiersz1][kolumna1] = 45; 
-            if(wiersz2 == gra->rozmiar - 1)
-                gra->plansza[wiersz2][kolumna2] = '$';
-            else 
-                gra->plansza[wiersz2][kolumna2] = 'O'; 
-            return 1;
-        }
-
-        if(gra->plansza[wiersz1 + 1][kolumna1 + (Hor/2)]=='O') // zbicie
-            {
-                gra->plansza[wiersz1 + 1][kolumna1 + (Hor/2)]=45;
-                gra->plansza[wiersz1][kolumna1] = 45; 
-                if(wiersz2 == gra->rozmiar - 1)
-                    gra->plansza[wiersz2][kolumna2] = '$';
-                else 
-                    gra->plansza[wiersz2][kolumna2] = 'O'; 
-                zbicie = 1;
-                pozX = kolumna2;
-                pozY = wiersz2;
-                return 1;
-            }
-        else 
-        {
-            return 0;
-        }
-
-        break;
+        return sprawdzDamke(gra,wiersz1,kolumna1,wiersz2,kolumna2);
     }
+    else 
+        return sprawdzPionka(gra,wiersz1,kolumna1,wiersz2,kolumna2);
 
-    return 0;
 }
 
 //---------------------M O Z L I W O S C - R U C H U-------------//
@@ -452,6 +367,7 @@ int MozliwoscRuchu(struct warcaby* gra, int wiersz1, int kolumna1)
     //sprawdzanie dla damusi
     if(gra->plansza[wiersz1][kolumna1] == '@' || gra->plansza[wiersz1][kolumna1] == '$')
     {
+        printf("\nMozliwosc ruchu damki\n");
         if(MozliwoscRuchuDamki(gra,wiersz1,kolumna1) == 1)
             return 1;
         return 0;
@@ -536,14 +452,14 @@ int Czymozna(struct warcaby* gra,int wiersz1, int kolumna1)
     {
         if(wiersz1 - 2 <= 0)
             return 0;
-        if(((gra->plansza[wiersz1 - 1][kolumna1 - 1] == 'X') && (gra->plansza[wiersz1 - 2][kolumna1 - 2] == '-')) || ((gra->plansza[wiersz1 - 1][kolumna1 + 1] == 'X') && (gra->plansza[wiersz1 - 2][kolumna1 + 2] == '-')))
+        if((((gra->plansza[wiersz1 - 1][kolumna1 - 1] == 'X') || (gra->plansza[wiersz1 - 1][kolumna1 - 1] == '$')) && (gra->plansza[wiersz1 - 2][kolumna1 - 2] == '-')) || (((gra->plansza[wiersz1 - 1][kolumna1 + 1] == 'X') || (gra->plansza[wiersz1 - 1][kolumna1 + 1] == 'X')) && (gra->plansza[wiersz1 - 2][kolumna1 + 2] == '-')))
             return 1;
     }
     else
     {
         if(wiersz1 + 2 >= gra->rozmiar)
             return 0;
-        if(((gra->plansza[wiersz1 + 1][kolumna1 - 1] == 'O') && (gra->plansza[wiersz1 + 2][kolumna1 - 2] == '-')) || ((gra->plansza[wiersz1 + 1][kolumna1 + 1] == 'O') && (gra->plansza[wiersz1 + 2][kolumna1 + 2] == '-')))
+        if((((gra->plansza[wiersz1 + 1][kolumna1 - 1] == 'O') || (gra->plansza[wiersz1 + 1][kolumna1 - 1] == '@')) && (gra->plansza[wiersz1 + 2][kolumna1 - 2] == '-')) || (((gra->plansza[wiersz1 + 1][kolumna1 + 1] == 'O') || (gra->plansza[wiersz1 + 1][kolumna1 + 1] == '@')) && (gra->plansza[wiersz1 + 2][kolumna1 + 2] == '-')))
            return 1; 
     }
     return 0;
@@ -559,7 +475,7 @@ int CzymoznaKraw(struct warcaby* gra,int wiersz1, int kolumna1)
         {
             if((kolumna1 - 1 + i) < 0 || (kolumna1 -1 + i) >= gra->rozmiar)
                 continue;
-            if((gra->plansza[wiersz1 - 1][kolumna1 - 1 + i] == 'X') && (gra->plansza[wiersz1 - 2][kolumna1 -2 + (2*i)] == '-'))
+            if(((gra->plansza[wiersz1 - 1][kolumna1 - 1 + i] == 'X') || (gra->plansza[wiersz1 - 1][kolumna1 - 1 + i] == '$')) && (gra->plansza[wiersz1 - 2][kolumna1 -2 + (2*i)] == '-'))
                 return 1;
         }
 
@@ -569,7 +485,7 @@ int CzymoznaKraw(struct warcaby* gra,int wiersz1, int kolumna1)
         {
             if((kolumna1 - 1 + i) < 0 || (kolumna1 -1 + i) >= gra->rozmiar)
                 continue;
-            if((gra->plansza[wiersz1 + 1][kolumna1 - 1 + i] == 'O') && (gra->plansza[wiersz1 + 2][kolumna1 -2 + (2*i)] == '-'))
+            if(((gra->plansza[wiersz1 + 1][kolumna1 - 1 + i] == 'O') || (gra->plansza[wiersz1 + 1][kolumna1 - 1 + i] == '@')) && (gra->plansza[wiersz1 + 2][kolumna1 -2 + (2*i)] == '-'))
                 return 1;
         }
 
@@ -582,17 +498,14 @@ void zapisz(struct warcaby* gra)
 {
     FILE* out = fopen("zapis.txt","w+");
     fprintf(out,"%d\n",gra->rozmiar);
-    //fwrite(&gra->rozmiar,sizeof(int),1,out);
     for(int i = 0; i < gra->rozmiar; i++)
     {
         for(int j = 0; j < gra->rozmiar; j++)
         {
             fprintf(out,"%c ",gra->plansza[i][j]);
-            //fwrite(gra->plansza[i]+j,sizeof(char),1,out);
         }
         fprintf(out,"\n");
     }
-    //fwrite(&gra->gracz,sizeof(int),1,out);
     fprintf(out,"%d",gra->gracz);
 
     fclose(out);    
@@ -603,8 +516,44 @@ void zapisz(struct warcaby* gra)
 int MozliwoscRuchuDamki(struct warcaby* gra, int w, int k)
 {
     int kierunek;
+    int i;
+
+    //prawo gora
+    i = 1;
+    while( w - i > -1 && k + i < gra->rozmiar)
+    {
+        kierunek = 1;
+        if(gra->plansza[w-i][k+i] == '-')
+        {
+            return 1;
+        }
+        else 
+        {
+            if(MozliwoscBiciaDamka(gra,w-i,k+i,kierunek) == 1)
+                return 1;
+        }
+        break;
+        i++;
+    }    
+
+    //lewo gora
+    i = 1;
+    while( w - i > -1 && k - i > -1)
+    {
+        kierunek = 2;
+        if(gra->plansza[w-i][k-i] == '-')
+            return 1;
+        else
+        {
+            if(MozliwoscBiciaDamka(gra,w-i,k-i,kierunek) == 1)
+                return 1;   
+        }
+        break;
+        i++;
+    }    
+    
     //lewo dol
-    int i =0;
+    i = 1;
     while( w + i < gra->rozmiar && k - i >= 0)
     {
         kierunek = 3;
@@ -615,11 +564,12 @@ int MozliwoscRuchuDamki(struct warcaby* gra, int w, int k)
             if(MozliwoscBiciaDamka(gra,w+i,k-i,kierunek) == 1)
                 return 1;
         }
+        break;
         i++;
     }
 
     //prawo dol
-    i = 0;
+    i = 1;
     while( w + i < gra->rozmiar && k + i < gra->rozmiar)
     {
         kierunek = 4;
@@ -630,37 +580,7 @@ int MozliwoscRuchuDamki(struct warcaby* gra, int w, int k)
             if(MozliwoscBiciaDamka(gra,w+i,k+i,kierunek) == 1)
                 return 1;
         }
-        i++;
-    }
-    i = 0;
-
-    //lewo gora
-    i = 0;
-    while( w - i > -1 && k - i > -1)
-    {
-        kierunek = 2;
-        if(gra->plansza[w-i][k-i] == '-')
-            return 1;
-        else
-        {
-            if(MozliwoscBiciaDamka(gra,w-i,k-i,kierunek) == 1)
-                return 1;
-        }
-        i++;
-    }
-
-    //prawo gora
-    i = 0;
-    while( w - i > -1 && k + i < gra->rozmiar)
-    {
-        kierunek = 1;
-        if(gra->plansza[w-i][k+i] == '-')
-            return 1;
-        else 
-        {
-            if(MozliwoscBiciaDamka(gra,w-i,k+i,kierunek) == 1)
-                return 1;
-        }
+        break;
         i++;
     }
 
@@ -676,7 +596,7 @@ int MozliwoscBiciaDamka(struct warcaby* gra, int w, int k, int kierunek)
         switch (kierunek)
         {
         case 1:
-            if((w -1 > -1) && (k + 1 < gra->rozmiar) && (gra->plansza[w][k] == 'X') && (gra->plansza[w-1][k+1] == '-'))
+            if((w - 1 > -1) && (k + 1 < gra->rozmiar) && (gra->plansza[w][k] == 'X') && (gra->plansza[w-1][k+1] == '-'))
                 return 1;        
             break;
     
@@ -701,7 +621,7 @@ int MozliwoscBiciaDamka(struct warcaby* gra, int w, int k, int kierunek)
         switch (kierunek)
         {
         case 1:
-            if((w -1 > -1) && (k + 1 < gra->rozmiar) && (gra->plansza[w][k] == 'O') && (gra->plansza[w-1][k+1] == '-'))
+            if((w - 1 > -1) && (k + 1 < gra->rozmiar) && (gra->plansza[w][k] == 'O') && (gra->plansza[w-1][k+1] == '-'))
                 return 1;        
             break;
     
@@ -724,3 +644,332 @@ int MozliwoscBiciaDamka(struct warcaby* gra, int w, int k, int kierunek)
     
     return 0;
 }
+
+//-------------S P R A W D Z A N I E - P I O N K A-----------------------------//
+
+int sprawdzPionka(struct warcaby* gra, int wiersz1, int kolumna1, int wiersz2, int kolumna2)
+{
+    int Hor,Ver;
+    Hor = kolumna2 - kolumna1;
+    Ver = wiersz2 - wiersz1;
+
+    if((Hor > 2 || Hor < -2) || (Ver > 2 || Ver < -2))
+        return 0;
+
+    switch(gra->gracz%2)
+    {
+        case 0:
+
+        if(Ver >= 0)//sprawdzanie kierunku
+            return 0;
+            
+        if((Ver == -1) && (Hor == 1 || Hor == -1)) //przesuwanie o jedno pole
+        {
+            if(zbicie == 1)
+                return 0;
+            if(wiersz2 == 0)
+                gra->plansza[wiersz2][kolumna2] = '@';
+            else 
+                gra->plansza[wiersz2][kolumna2] = gra->plansza[wiersz1][kolumna1]; 
+            gra->plansza[wiersz1][kolumna1] = 45;
+            zbicie = 0;
+            return 1;
+        }
+
+        if(gra->plansza[wiersz1 - 1][kolumna1 + (Hor/2)]=='X' || gra->plansza[wiersz1 - 1][kolumna1 + (Hor/2)]=='$') // zbicie
+            {
+                gra->plansza[wiersz1 + (Ver/2)][kolumna1 + (Hor/2)]=45; 
+                
+                if(wiersz2 == 0)
+                    gra->plansza[wiersz2][kolumna2] = '@';
+                else 
+                    gra->plansza[wiersz2][kolumna2] = gra->plansza[wiersz1][kolumna1]; 
+                
+                gra->plansza[wiersz1][kolumna1] = 45;
+                zbicie = 1;
+                pozX = kolumna2;
+                pozY = wiersz2;
+                return 1;
+            }
+        else 
+            return 0;
+
+        break;
+
+        case 1:
+
+        if(Ver <= 0)//sprawdzanie kierunku
+            return 0;
+
+        if((Ver == 1) && (Hor == 1 || Hor == -1)) //przesuwanie o jedno pole
+        {
+            if(zbicie == 1)
+                return 0;
+            zbicie = 0;
+            if(wiersz2 == gra->rozmiar - 1)
+                gra->plansza[wiersz2][kolumna2] = '$';
+            else 
+                gra->plansza[wiersz2][kolumna2] = gra->plansza[wiersz1][kolumna1];
+            gra->plansza[wiersz1][kolumna1] = 45; 
+            return 1;
+        }
+
+        if(gra->plansza[wiersz1 + 1][kolumna1 + (Hor/2)]=='O' || gra->plansza[wiersz1 + 1][kolumna1 + (Hor/2)]=='@') // zbicie
+            {
+                gra->plansza[wiersz1 + 1][kolumna1 + (Hor/2)]=45;
+                if(wiersz2 == gra->rozmiar - 1)
+                    gra->plansza[wiersz2][kolumna2] = '$';
+                else 
+                    gra->plansza[wiersz2][kolumna2] = gra->plansza[wiersz1][kolumna1]; 
+                gra->plansza[wiersz1][kolumna1] = 45; 
+                zbicie = 1;
+                pozX = kolumna2;
+                pozY = wiersz2;
+                return 1;
+            }
+        else 
+        {
+            return 0;
+        }
+
+        break;
+    }
+
+}
+
+//-------------S P R A W D Z A N I E - D A M K E-----------------------------//
+
+int sprawdzDamke(struct warcaby* gra, int w1, int k1, int w2, int k2)
+{
+    int kierunek;
+    //sprawdzanie czy ruch po skosie
+    if((w2 - w1) != (k2 - k1) && (w2 - w1) != (k1 - k2))
+        return 0;
+    
+    //okreslanie kierunku
+    if((w2 - w1) < 0 && (k2 - k1) > 0)
+        kierunek = 1;
+    else if((w2 - w1) < 0 && (k2 - k1) < 0)
+        kierunek = 2;
+    else if((w2 - w1) > 0 && (k2 - k1) < 0)
+        kierunek = 3;
+    else
+        kierunek = 4;
+
+    int i = 1;
+    //sprawdzanie pozycji dla gracza 0;
+    if(gra->gracz%2==0)
+    {
+        switch (kierunek)
+        {
+        case 1:
+            while(w1 - i > w2 + 1)
+            {
+                if(gra->plansza[w1-i][k1+i] != '-')
+                    return 0; 
+                i++;
+            }
+            if((gra->plansza[w2+1][k2-1] == 'X') || (gra->plansza[w2+1][k2-1] == '$'))//zbicie
+            {
+                //zbicie = 1;
+                gra->plansza[w2][k2] = gra->plansza[w1][k1];
+                gra->plansza[w2+1][k2-1] = '-';
+                gra->plansza[w1][k1] = '-';
+                return 1;
+            } 
+            else if(gra->plansza[w2+1][k2-1] == '-')//przesuniecie
+            {
+                gra->plansza[w2][k2] = gra->plansza[w1][k1];
+                gra->plansza[w1][k1] = '-';
+                return 1;
+            }
+            else
+                return 0;
+            
+            break;
+        
+        case 2:
+            while(w1 - i > w2 + 1)
+            {
+                if(gra->plansza[w1-i][k1-i] != '-')
+                    return 0; 
+                i++;
+            }
+            if((gra->plansza[w2+1][k2+1] == 'X') || (gra->plansza[w2+1][k2+1] == '$'))//zbicie
+            {
+                //zbicie = 1;
+                gra->plansza[w2][k2] = gra->plansza[w1][k1];
+                gra->plansza[w2+1][k2+1] = '-';
+                gra->plansza[w1][k1] = '-';
+                return 1;
+            } 
+            else if(gra->plansza[w2+1][k2+1] == '-')//przesuniecie
+            {
+                gra->plansza[w2][k2] = gra->plansza[w1][k1];
+                gra->plansza[w1][k1] = '-';
+                return 1;
+            }
+            else
+                return 0;
+            break;
+        
+        case 3:
+            while(w1 + i < w2 - 1)
+            {
+                if(gra->plansza[w1+i][k1-i] != '-')
+                    return 0;
+                i++;
+            }
+            if((gra->plansza[w2-1][k2+1] == 'X') || (gra->plansza[w2-1][k2+1] == '$'))//zbicie
+            {
+                //zbicie = 1;
+                gra->plansza[w2][k2] = gra->plansza[w1][k1];
+                gra->plansza[w2-1][k2+1] = '-';
+                gra->plansza[w1][k1] = '-';
+                return 1;
+            } 
+            else if(gra->plansza[w2-1][k2+1] == '-')//przesuniecie
+            {
+                gra->plansza[w2][k2] = gra->plansza[w1][k1];
+                gra->plansza[w1][k1] = '-';
+                return 1;
+            }
+            else
+                return 0;
+            break;
+        
+        case 4:
+            while(w1 + i < w2-1)
+            {
+                if(gra->plansza[w1+i][k1+i] != '-')
+                    return 0; 
+                i++;
+            }
+            if((gra->plansza[w2-1][k2-1] == 'X') || (gra->plansza[w2-1][k2-1] == '$'))//zbicie
+            {
+                //zbicie = 1;
+                gra->plansza[w2][k2] = gra->plansza[w1][k1];
+                gra->plansza[w2-1][k2-1] = '-';
+                gra->plansza[w1][k1] = '-';
+                return 1;
+            } 
+            else if(gra->plansza[w2-1][k2-1] == '-')//przesuniecie
+            {
+                gra->plansza[w2][k2] = gra->plansza[w1][k1];
+                gra->plansza[w1][k1] = '-';
+                return 1;
+            }
+            else
+                return 0;
+            break;
+        }
+    }
+    else
+    {
+        switch (kierunek)
+        {
+        case 1:
+            while(w1 - i > w2 + 1)
+            {
+                if(gra->plansza[w1-i][k1+i] != '-')
+                    return 0; 
+                i++;
+            }
+            if((gra->plansza[w2+1][k2-1] == 'O') || (gra->plansza[w2+1][k2-1] == '@'))//zbicie
+            {
+                //zbicie = 1;
+                gra->plansza[w2][k2] = gra->plansza[w1][k1];
+                gra->plansza[w2+1][k2-1] = '-';
+                gra->plansza[w1][k1] = '-';
+                return 1;
+            } 
+            else if(gra->plansza[w2+1][k2-1] == '-')//przesuniecie
+            {
+                gra->plansza[w2][k2] = gra->plansza[w1][k1];
+                gra->plansza[w1][k1] = '-';
+                return 1;
+            }
+            else
+                return 0;
+            
+            break;
+        
+        case 2:
+            while(w1 - i > w2 + 1)
+            {
+                if(gra->plansza[w1-i][k1-i] != '-')
+                    return 0; 
+                i++;
+            }
+            if((gra->plansza[w2+1][k2+1] == 'O') || (gra->plansza[w2+1][k2+1] == '@'))//zbicie
+            {
+                //zbicie = 1;
+                gra->plansza[w2][k2] = gra->plansza[w1][k1];
+                gra->plansza[w2+1][k2+1] = '-';
+                gra->plansza[w1][k1] = '-';
+                return 1;
+            } 
+            else if(gra->plansza[w2+1][k2+1] == '-')//przesuniecie
+            {
+                gra->plansza[w2][k2] = gra->plansza[w1][k1];
+                gra->plansza[w1][k1] = '-';
+                return 1;
+            }
+            else
+                return 0;
+            break;
+        
+        case 3:
+            while(w1 + i < w2 - 1)
+            {
+                if(gra->plansza[w1+i][k1-i] != '-')
+                    return 0;
+                i++;
+            }
+            if((gra->plansza[w2-1][k2+1] == 'O') || (gra->plansza[w2-1][k2+1] == '@'))//zbicie
+            {
+                //zbicie = 1;
+                gra->plansza[w2][k2] = gra->plansza[w1][k1];
+                gra->plansza[w2-1][k2+1] = '-';
+                gra->plansza[w1][k1] = '-';
+                return 1;
+            } 
+            else if(gra->plansza[w2-1][k2+1] == '-')//przesuniecie
+            {
+                gra->plansza[w2][k2] = gra->plansza[w1][k1];
+                gra->plansza[w1][k1] = '-';
+                return 1;
+            }
+            else
+                return 0;
+            break;
+        
+        case 4:
+            while(w1 + i < w2-1)
+            {
+                if(gra->plansza[w1+i][k1+i] != '-')
+                    return 0; 
+                i++;
+            }
+            if((gra->plansza[w2-1][k2-1] == 'O') || (gra->plansza[w2-1][k2-1] == '@'))//zbicie
+            {
+                //zbicie = 1;
+                gra->plansza[w2][k2] = gra->plansza[w1][k1];
+                gra->plansza[w2-1][k2-1] = '-';
+                gra->plansza[w1][k1] = '-';
+                return 1;
+            } 
+            else if(gra->plansza[w2-1][k2-1] == '-')//przesuniecie
+            {
+                gra->plansza[w2][k2] = gra->plansza[w1][k1];
+                gra->plansza[w1][k1] = '-';
+                return 1;
+            }
+            else
+                return 0;
+            break;
+        }
+    }    
+    
+    return 0;   
+} 
