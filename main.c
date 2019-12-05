@@ -42,6 +42,8 @@ int MozliwoscBiciaDamka(struct warcaby* gra, int w, int k, int kierunek);
 
 void zapisz(struct warcaby* gra);
 
+void czyKoniec(struct warcaby* gra);
+
 void wyborPola();
 
 void wyborPionka();
@@ -52,14 +54,19 @@ int zbicie = 0;
 
 int pozX,pozY;
 
+int koniec = 1;
+
+int pionkiX=0,pionkiO=0;
+
 
 //----------------G L O W N A - F U N K C J A--------------------------------//
 
 int main()
 {
+
     printf("To bedzie cudowna gra!\n");
     struct warcaby* gra = Inicjalizuj();
-    for(int i = 0; i < 100; i++)
+    while(koniec!=0)
     {
         wyswietl(gra);
         ruch(gra);
@@ -174,7 +181,10 @@ struct warcaby* wczytaj(char sciezka[])
         for(int j = 0; j < gra->rozmiar; j++)
         {
             fscanf(in,"%c ",&gra->plansza[i][j]);
-            //fread(gra->plansza[i]+j,sizeof(char),1,in);
+            if(gra->plansza[i][j]=='X'||gra->plansza[i][j]=='$')
+            pionkiX++;
+            else if(gra->plansza[i][j]=='O'||gra->plansza[i][j]=='@')
+            pionkiO++;
         }
     }
     //fread(&gra->gracz,sizeof(int),1,in);
@@ -224,7 +234,10 @@ void wypelnijPlansze(struct warcaby* gra)
             if((i+j)%2==0)
                 gra->plansza[i][j]='-';
             else
+            {
                 gra->plansza[i][j]='X';           //zapisywanie pierwszych trzech wierszy X-ami
+                pionkiX++;
+            }    
         }
     }
 
@@ -235,7 +248,10 @@ void wypelnijPlansze(struct warcaby* gra)
             if((i+j)%2==0)
                 gra->plansza[i][j]='-';
             else
+            {
                 gra->plansza[i][j]='O';     //zapisywanie ostatnich trzech wierszy O-ami
+                pionkiO++;
+            }    
         }
     }
 }
@@ -486,7 +502,7 @@ int Czymozna(struct warcaby* gra,int wiersz1, int kolumna1)
 int CzymoznaKraw(struct warcaby* gra,int wiersz1, int kolumna1)
 {
     //dla gracza 'O'
-    if(gra->gracz%2==0 && wiersz1 > 1)
+    if(gra->gracz%2==0 && wiersz1 > 0)
         for(int i = 0; i < 3; i+=2)
         {
             if((kolumna1 - 1 + i) < 0 || (kolumna1 -1 + i) >= gra->rozmiar)
@@ -496,7 +512,7 @@ int CzymoznaKraw(struct warcaby* gra,int wiersz1, int kolumna1)
         }
 
     //dla gracza 'X'
-    if(gra->gracz%2==1 && wiersz1 < gra->rozmiar - 1)
+    if(gra->gracz%2==1 && wiersz1 < gra->rozmiar - 2)
         for(int i = 0; i < 3; i+=2)
         {
             if((kolumna1 - 1 + i) < 0 || (kolumna1 -1 + i) >= gra->rozmiar)
@@ -710,6 +726,8 @@ int sprawdzPionka(struct warcaby* gra, int wiersz1, int kolumna1, int wiersz2, i
                 zbicie = 1;
                 pozX = kolumna2;
                 pozY = wiersz2;
+                pionkiX--;
+                czyKoniec(gra);
                 return 1;
             }
         else 
@@ -746,6 +764,8 @@ int sprawdzPionka(struct warcaby* gra, int wiersz1, int kolumna1, int wiersz2, i
                 zbicie = 1;
                 pozX = kolumna2;
                 pozY = wiersz2;
+                pionkiO--;
+                czyKoniec(gra);
                 return 1;
             }
         else 
@@ -798,6 +818,8 @@ int sprawdzDamke(struct warcaby* gra, int w1, int k1, int w2, int k2)
                 gra->plansza[w1][k1] = '-';
                 pozY = w2;
                 pozX = k2;
+                pionkiX--;
+                czyKoniec(gra);
                 return 1;
             } 
             else if(gra->plansza[w2+1][k2-1] == '-')//przesuniecie
@@ -829,6 +851,8 @@ int sprawdzDamke(struct warcaby* gra, int w1, int k1, int w2, int k2)
                 gra->plansza[w1][k1] = '-';
                 pozY = w2;
                 pozX = k2;
+                pionkiX--;
+                czyKoniec(gra);
                 return 1;
             } 
             else if(gra->plansza[w2+1][k2+1] == '-')//przesuniecie
@@ -859,6 +883,8 @@ int sprawdzDamke(struct warcaby* gra, int w1, int k1, int w2, int k2)
                 gra->plansza[w1][k1] = '-';
                 pozY = w2;
                 pozX = k2;
+                pionkiX--;
+                czyKoniec(gra);
                 return 1;
             } 
             else if(gra->plansza[w2-1][k2+1] == '-')//przesuniecie
@@ -889,6 +915,8 @@ int sprawdzDamke(struct warcaby* gra, int w1, int k1, int w2, int k2)
                 gra->plansza[w1][k1] = '-';
                 pozY = w2;
                 pozX = k2;
+                pionkiX--;
+                czyKoniec(gra);
                 return 1;
             } 
             else if(gra->plansza[w2-1][k2-1] == '-')//przesuniecie
@@ -924,6 +952,8 @@ int sprawdzDamke(struct warcaby* gra, int w1, int k1, int w2, int k2)
                 gra->plansza[w1][k1] = '-';
                 pozY = w2;
                 pozX = k2;
+                pionkiO--;
+                czyKoniec(gra);
                 return 1;
             } 
             else if(gra->plansza[w2+1][k2-1] == '-')//przesuniecie
@@ -955,6 +985,8 @@ int sprawdzDamke(struct warcaby* gra, int w1, int k1, int w2, int k2)
                 gra->plansza[w1][k1] = '-';
                 pozY = w2;
                 pozX = k2;
+                pionkiO--;
+                czyKoniec(gra);
                 return 1;
             } 
             else if(gra->plansza[w2+1][k2+1] == '-')//przesuniecie
@@ -985,6 +1017,8 @@ int sprawdzDamke(struct warcaby* gra, int w1, int k1, int w2, int k2)
                 gra->plansza[w1][k1] = '-';
                 pozY = w2;
                 pozX = k2;
+                pionkiO--;
+                czyKoniec(gra);
                 return 1;
             } 
             else if(gra->plansza[w2-1][k2+1] == '-')//przesuniecie
@@ -1015,6 +1049,8 @@ int sprawdzDamke(struct warcaby* gra, int w1, int k1, int w2, int k2)
                 gra->plansza[w1][k1] = '-';
                 pozY = w2;
                 pozX = k2;
+                pionkiO--;
+                czyKoniec(gra);
                 return 1;
             } 
             else if(gra->plansza[w2-1][k2-1] == '-')//przesuniecie
@@ -1034,3 +1070,20 @@ int sprawdzDamke(struct warcaby* gra, int w1, int k1, int w2, int k2)
     
     return 0;   
 } 
+//-----------------------------Koniec gry--------------------//
+
+void czyKoniec(struct warcaby* gra)
+{
+    if(pionkiX==0)
+    {
+        printf("\n\tGracz O wygral gre\n");
+        koniec=0;
+    }
+    else if(pionkiO==0)
+    {
+        printf("\n\tGracz Y wygral gre\n");
+        koniec=0;
+    }
+
+}
+
