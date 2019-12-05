@@ -502,7 +502,7 @@ int Czymozna(struct warcaby* gra,int wiersz1, int kolumna1)
 int CzymoznaKraw(struct warcaby* gra,int wiersz1, int kolumna1)
 {
     //dla gracza 'O'
-    if(gra->gracz%2==0 && wiersz1 > 0)
+    if(gra->gracz%2==0 && wiersz1 > 1)
         for(int i = 0; i < 3; i+=2)
         {
             if((kolumna1 - 1 + i) < 0 || (kolumna1 -1 + i) >= gra->rozmiar)
@@ -512,7 +512,7 @@ int CzymoznaKraw(struct warcaby* gra,int wiersz1, int kolumna1)
         }
 
     //dla gracza 'X'
-    if(gra->gracz%2==1 && wiersz1 < gra->rozmiar - 2)
+    if(gra->gracz%2==1 && wiersz1 < gra->rozmiar - 1)
         for(int i = 0; i < 3; i+=2)
         {
             if((kolumna1 - 1 + i) < 0 || (kolumna1 -1 + i) >= gra->rozmiar)
