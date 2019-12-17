@@ -6,6 +6,11 @@ struct warcaby{
     char** plansza; 
     int gracz;
 };
+int Czymozna(struct warcaby* gra,int wiersz1,int kolumna1);
+
+int CzymoznaKraw(struct warcaby* gra,int wiersz1,int kolumna1);
+
+int CzyIstniejeBicie(struct warcaby* gra,int wiersz1,int kolumna1);
 
 struct ruch
 {
@@ -226,25 +231,246 @@ void pokazListeY(struct PionkiY* ly)
 
 void listaRuchowX(struct PionkiX* lX,struct warcaby* gra)
 {
+    struct listaRuchow* lR = NULL;
+    struct listaRuchow* glowa;
     int w = lX->pionek.wiersz;
     int k = lX->pionek.kolumna;
     int wartosc = lX->pionek.wartosc;
-    lX->lista->ri.z[0] = w;
-    lX->lista->ri.z[1] = k;
+    lX->lista = NULL;
     if(wartosc == 5)
     {
-        if(w < gra->rozmiar) //generowanie ruchu z mozliwym zbiciem
+        if(w < gra->rozmiar - 2) //generowanie ruchu z mozliwym zbiciem
         {
+            for(int i = 0; i < 2; i++)
+            {
+                if(i == 0)
+                {
+                    if(k - 1 < 0)
+                        continue;
+                    else
+                    {
+                        if(gra->plansza[w+1][k-1] == '-')
+                        {
+                            if(lR == NULL)
+                            {
+                                lR = malloc(sizeof(struct listaRuchow));
+                                glowa = lR;
+                                lR->ri.z[0] = w;
+                                lR->ri.z[1] = k;
+                                lR->ri.na[0] = w+1;
+                                lR->ri.na[1] = k-1;
+                                lR->nastepny = NULL;
+                                lR->ri.wartosc = 5;
+                                printf("JESTEM TU?");
+                            }
+                            else
+                            {
+                                while(lR->nastepny)
+                                {
+                                    lR = lR->nastepny; 
+                                }
+                                lR->nastepny = malloc(sizeof(struct listaRuchow));
+                                lR = lR->nastepny;
+                                lR = malloc(sizeof(struct listaRuchow));
+                                lR->ri.z[0] = w;
+                                lR->ri.z[1] = k;
+                                lR->ri.na[0] = w+1;
+                                lR->ri.na[1] = k-1;
+                                lR->ri.wartosc = 5;
+                                lR->nastepny = NULL;
+                            }
+                            
+                        }
+                    }
+                }
+            }
+            if(gra->plansza[w+1][k-1] == 'O' || gra->plansza[w+1][k-1] == '@')
+                {
+                    if(CzyIstniejeBicie(gra,w,k) == 1)
+                        {
+
+                        }
+                    }
+                }        
+                }
+                else
+                {
+                    if(k + 1 > gra->rozmiar-1)
+                        continue;
+                    else
+                    {
+                        if(gra->plansza[w+1][k+1] == '-')
+                        {
+                            if(lR == NULL)
+                            {
+                                lR = malloc(sizeof(struct listaRuchow));
+                                glowa = lR;
+                                lR->ri.z[0] = w;
+                                lR->ri.z[1] = k;
+                                lR->ri.na[0] = w+1;
+                                lR->ri.na[1] = k+1;
+                                lR->ri.wartosc = 5;
+                                lR->nastepny = NULL;
+                                printf("BYLEM TU!\n");
+                            }
+                            else
+                            {
+                                while(lR->nastepny)
+                                {
+                                    lR = lR->nastepny; 
+                                }
+                                lR->nastepny = malloc(sizeof(struct listaRuchow));
+                                lR = lR->nastepny;
+                                lR->ri.z[0] = w;
+                                lR->ri.z[1] = k;
+                                lR->ri.na[0] = w+1;
+                                lR->ri.na[1] = k+1;
+                                lR->ri.wartosc = 5;
+                                lR->nastepny = NULL;
+                                printf("TU TEZ!\n");
+                            }
+                            
+                        }
+                    }
+                }
+                
+            }
+            if(CzyIstniejeBicie(gra,w,k) == 1)
+            {
+                if(lR == NULL)
+                {
+                    lR = malloc(sizeof(struct listaRuchow));
+                    glowa = lR;
+                    lR->ri.z[0] = w;
+                    lR->ri.z[1] = k;
+                    lR->ri.na[0] = w+1;
+                    lR->ri.na[1] = k+1;
+                    lR->ri.wartosc = 5;
+                    lR->nastepny = NULL;
+                    printf("BYLEM TU!\n");
+                }
+                else
+                {
+                    while(lR->nastepny)
+                    {
+                        lR = lR->nastepny; 
+                    }
+                    lR->nastepny = malloc(sizeof(struct listaRuchow));
+                    lR = lR->nastepny;
+                    lR->ri.z[0] = w;
+                    lR->ri.z[1] = k;
+                    lR->ri.na[0] = w+1;
+                    lR->ri.na[1] = k+1;
+                    lR->ri.wartosc = 5;
+                    lR->nastepny = NULL;
+                    printf("TU TEZ!\n");
+                }            
+            }
 
         }
         else //jestesmy na przedostatniej krawedzi
         {
-            if(k -1 < 0 || k + 1 > gra->rozmiar -1)
-                continue;
-            else if(gra->plansza[w+1][k-1] == 'O' || gra->plansza[w+1][k-1] == '@')
-                lX->lista
+            for(int i = 0; i < 2; i++)
+            {
+                if(i == 0)
+                {
+                    if(k - 1 < 0)
+                        continue;
+                    else
+                    {
+                        if(gra->plansza[w+1][k-1] == '-')
+                        {
+                            if(lR == NULL)
+                            {
+                                lR = malloc(sizeof(struct listaRuchow));
+                                glowa = lR;
+                                lR->ri.z[0] = w;
+                                lR->ri.z[1] = k;
+                                lR->ri.na[0] = w+1;
+                                lR->ri.na[1] = k-1;
+                                lR->nastepny = NULL;
+                                lR->ri.wartosc = 5;
+                                //printf("JESTEM TU?");
+                            }
+                            else
+                            {
+                                while(lR->nastepny)
+                                {
+                                    lR = lR->nastepny; 
+                                }
+                                lR->nastepny = malloc(sizeof(struct listaRuchow));
+                                lR = lR->nastepny;
+                                lR = malloc(sizeof(struct listaRuchow));
+                                lR->ri.z[0] = w;
+                                lR->ri.z[1] = k;
+                                lR->ri.na[0] = w+1;
+                                lR->ri.na[1] = k-1;
+                                lR->ri.wartosc = 5;
+                                lR->nastepny = NULL;
+                            }
+                            
+                        }
+                    }
+                    
+                }
+                else
+                {
+                    if(k + 1 > gra->rozmiar-1)
+                        continue;
+                    else
+                    {
+                        if(gra->plansza[w+1][k+1] == '-')
+                        {
+                            if(lR == NULL)
+                            {
+                                lR = malloc(sizeof(struct listaRuchow));
+                                glowa = lR;
+                                lR->ri.z[0] = w;
+                                lR->ri.z[1] = k;
+                                lR->ri.na[0] = w+1;
+                                lR->ri.na[1] = k+1;
+                                lR->ri.wartosc = 5;
+                                lR->nastepny = NULL;
+                                //printf("BYLEM TU!\n");
+                            }
+                            else
+                            {
+                                while(lR->nastepny)
+                                {
+                                    lR = lR->nastepny; 
+                                }
+                                lR->nastepny = malloc(sizeof(struct listaRuchow));
+                                lR = lR->nastepny;
+                                lR->ri.z[0] = w;
+                                lR->ri.z[1] = k;
+                                lR->ri.na[0] = w+1;
+                                lR->ri.na[1] = k+1;
+                                lR->ri.wartosc = 5;
+                                lR->nastepny = NULL;
+                                //printf("TU TEZ!\n");
+                            }
+                            
+                        }
+                    }
+                }
+                
+            }
         }           
     }
+    if(lR)
+    {
+        lX->lista = glowa;   
+    }
+    
+    while(lX->lista)
+    {
+        printf("\nz: %d, %d; na: %d, %d; wartosc: %d\n",lX->lista->ri.z[0],lX->lista->ri.z[1],lX->lista->ri.na[0],lX->lista->ri.na[1],lX->lista->ri.wartosc);
+        lX->lista=lX->lista->nastepny;
+    }
+        //printf("\nz: %d, %d; na: %d, %d; wartosc: %d\n",lX->lista->ri.z[0],lX->lista->ri.z[1],lX->lista->ri.na[0],lX->lista->ri.na[1],lX->lista->ri.wartosc);
+
+    if(lX->nastepny)
+        listaRuchowX(lX->nastepny,gra);
 }
 
 
@@ -257,11 +483,62 @@ int main()
     struct warcaby* gra = wczytaj("zapis.txt",&listaX,&listaY);
 
     wyswietl(gra);
-    pokazListeX(listaX);
+    if(listaX)
+        pokazListeX(listaX);
     printf("\n");
-    pokazListeY(listaY);
+    if(listaY)
+        pokazListeY(listaY);
+
+    listaRuchowX(listaX,gra);
 
 
+
+    return 0;
+}
+
+//---------------------C Z Y - I S T N I E J E - B I C I E-------------//
+
+int CzyIstniejeBicie(struct warcaby* gra,int wiersz1, int kolumna1)
+{
+    if(wiersz1 < 2 || wiersz1 >= (gra->rozmiar - 2) || kolumna1 < 2 || kolumna1 >= (gra->rozmiar - 2))
+    {
+        if(CzymoznaKraw(gra,wiersz1,kolumna1) == 1)
+        {
+            return 1;
+        }
+    }
+    else
+    {
+        if(Czymozna(gra,wiersz1,kolumna1) == 1)
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+//---------------------C Z Y - M O Z N A - Z B I C - W - P O L U-------------//
+
+int Czymozna(struct warcaby* gra,int wiersz1, int kolumna1)
+{
+    if((((gra->plansza[wiersz1 + 1][kolumna1 - 1] == 'O') || (gra->plansza[wiersz1 + 1][kolumna1 - 1] == '@')) && (gra->plansza[wiersz1 + 2][kolumna1 - 2] == '-')) || (((gra->plansza[wiersz1 + 1][kolumna1 + 1] == 'O') || (gra->plansza[wiersz1 + 1][kolumna1 + 1] == '@')) && (gra->plansza[wiersz1 + 2][kolumna1 + 2] == '-')))
+        return 1; 
+    return 0;
+}
+
+//---------------------C Z Y - M O Z N A - Z B I C - Z - K R A W E D Z I-------------//
+
+int CzymoznaKraw(struct warcaby* gra,int wiersz1, int kolumna1)
+{
+
+    for(int i = 0; i < 3; i+=2)
+    {
+        if((kolumna1 - 1 + i) < 0 || (kolumna1 -1 + i) >= gra->rozmiar)
+            continue;
+        if((gra->plansza[wiersz1 + 2][kolumna1 -2 + (2*i)] == '-'))
+           return 1;
+    }
 
     return 0;
 }
